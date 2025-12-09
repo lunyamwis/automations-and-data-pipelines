@@ -185,16 +185,16 @@ for f in files:
         except Exception as e:
             print(f"Error writing {file_name} to CSV: {e}")
 
-    # -------------------------------
-    # 4. MOVE FILE TO DESTINATION FOLDER
-    # -------------------------------
-    print(f"Moving {file_name} to destination folder...")
-    try:
-        # Move file: remove current parents, add destination folder
-        move_file(service, file_id, current_parents[0], DEST_FOLDER_ID)
-        
-    except Exception as e:
-        print(f"❌ Failed to move {file_name}: {e}")
+        # -------------------------------
+        # 4. MOVE FILE TO DESTINATION FOLDER
+        # -------------------------------
+        print(f"Moving {file_name} to destination folder...")
+        try:
+            # Move file: remove current parents, add destination folder
+            move_file(service, file_id, current_parents[0], DEST_FOLDER_ID)
+            
+        except Exception as e:
+            print(f"❌ Failed to move {file_name}: {e}")
     
     # -------------------------------
     # 5. DELETE LOCAL PDF
