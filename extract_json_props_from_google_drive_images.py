@@ -27,7 +27,8 @@ SCOPES = [
     'https://www.googleapis.com/auth/drive.file'
 ]
 
-SOURCE_FOLDER_ID = "18TWweKvj1wPcKNaJ3FOAmPPZzBMP2XEW"  # Source folder
+SOURCE_FOLDER_ID_ = "18TWweKvj1wPcKNaJ3FOAmPPZzBMP2XEW"  # Source folder
+SOURCE_FOLDER_ID = "165L9frVyU23noT4gCcz5UdjI2meOebBO"
 DEST_FOLDER_ID = "1unblcJoVK5LWrPhNtgYD4qrkGcMy7KgJ"    # Destination folder after processing
 
 DOWNLOAD_DIR = "downloaded"

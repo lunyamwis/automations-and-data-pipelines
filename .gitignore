@@ -11,7 +11,15 @@ DEL
 *.bak
 env*
 .env
-token.json
-schema.json
-credentials.json
+*.json
 *.csv
+*.html
+
+data/
+downloaded/
+
+# Ignore all text files
+*.txt
+
+# Except requirements.txt
+!requirements.txt
