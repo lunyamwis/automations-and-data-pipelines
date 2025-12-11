@@ -1,3 +1,4 @@
+import time
 import os
 import uuid
 import json
@@ -6,9 +7,15 @@ from pathlib import Path
 import pandas as pd
 from datetime import datetime
 from openai import OpenAI
+from openai import OpenAI, RateLimitError, APIConnectionError, APIStatusError, APIError
+
+
+
 
 # ------------------- OpenAI Client -------------------
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+max_retries = 3
+retry_delay = 2  # seconds
 
 # ------------------- Logging -------------------
 logging.basicConfig(
@@ -27,7 +34,7 @@ with open(json_schema_file, "r", encoding="utf-8") as f:
     json_schema = json.load(f)
 
 # ------------------- LLM Extraction Function -------------------
-def extract_lab_result_from_html(html_text: str) -> dict:
+def extract_lab_result_from_html(html_text: str,retry_delay=2,max_retries=3) -> dict:
     """
     Uses GPT-4o-mini to extract LabResult JSON from HTML text.
     Returns a dictionary matching the JSON schema loaded from file.
@@ -38,15 +45,38 @@ def extract_lab_result_from_html(html_text: str) -> dict:
         f"{json.dumps(json_schema, indent=2)}"
     )
 
-    response = client.chat.completions.create(
-        model="gpt-4o-mini",
-        messages=[
-            {"role": "system", "content": system_prompt},
-            {"role": "user", "content": f"Extract lab result from the following HTML:\n\n{html_text}"}
-        ],
-        response_format={"type": "json_object"},
-        temperature=0
-    )
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": f"Extract lab result from the following HTML:\n\n{html_text}"}
+                ],
+                response_format={"type": "json_object"},
+                temperature=0
+            )
+
+            # If no exception, break out of retry loop
+            break
+
+        except RateLimitError as e:
+            print(f"Rate limit hit (429). Attempt {attempt}/{max_retries}. Retrying in {retry_delay} sec...")
+            time.sleep(retry_delay)
+            retry_delay *= 2  # exponential backoff
+        except APIConnectionError as e:
+            # network/connectivity issue
+            raise Exception(f"API connection error: {e}")
+        except APIStatusError as e:
+            # non-200-range status code (4xx, 5xx)
+            raise Exception(f"API status error: {e}")
+        except APIError as e:
+            # fallback for all other API‑related errors
+            raise Exception(f"OpenAI API error: {e}")
+        except Exception as e:
+            # Catch anything else
+            raise Exception(f"Unexpected error: {e}")
 
     try:
         output_text = response.choices[0].message.content
@@ -80,6 +110,15 @@ for html_file in html_files:
         write_header = False  # after first write, don't write header again
 
         logging.info(f"Successfully processed {html_file.name}")
+        file_path_to_remove = html_folder/html_file.name
+        if os.path.exists(file_path_to_remove):
+            try:
+                os.remove(file_path_to_remove)
+                print(f"🗑️  Deleted local file: {html_file.name}")
+            except Exception as e:
+                print(f"Error deleting local {html_file.name}: {e}")
+        else:
+            print(f"⚠️ Local file not found for deletion: {html_file.name}")
 
     except Exception as e:
         logging.error(f"Error processing {html_file.name}: {e}", exc_info=True)
