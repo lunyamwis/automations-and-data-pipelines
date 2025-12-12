@@ -1,10 +1,10 @@
 from pathlib import Path
 from datetime import datetime
 
-root_folder = Path("/media/martin/NO NAME/CARL ACHAPA ULTRASOUND  REPORTS/")
+root_folder = Path("/media/martin/NO NAME/Ultrasound reports/")
 
 # Collect all files (excluding ~$ temp files)
-path_extension = ".docx"
+path_extension = ".doc"
 input_files = [
     f for f in root_folder.rglob(f"*{path_extension}")
     if not f.name.startswith("~$")

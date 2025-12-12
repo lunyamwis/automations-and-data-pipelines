@@ -2,13 +2,13 @@ from pathlib import Path
 import mammoth
 
 # ---- 1. Read paths from the TXT file ----
-txt_file = Path("/opt/softwares/automations_and_data_pipelines/file_list_20251211_185149.txt")  # ← change to your actual file name
+txt_file = Path("/opt/softwares/automations_and_data_pipelines/file_list_20251212_092317.txt")  # ← change to your actual file name
 
 with open(txt_file, "r", encoding="utf-8") as f:
     docx_paths = [Path(line.strip()) for line in f if line.strip()]
 
 # ---- 2. Create output folder ----
-output_folder = Path("data/html_scanned_outputs")
+output_folder = Path("data/html_outputs")
 output_folder.mkdir(exist_ok=True)
 
 # ---- 3. Convert each DOCX to HTML ----
